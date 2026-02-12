@@ -2,13 +2,18 @@ package com.example.demo.services;
 
 import com.example.demo.entities.User;
 import com.example.demo.repositories.UserRepository;
+import com.example.demo.services.exceptions2.DataBaseException;
 import com.example.demo.services.exceptions2.ResourcedNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Service
 public class UserService {
@@ -25,7 +30,13 @@ public class UserService {
     }
 
     public User insert(User obj){
-        return repository.save(obj);
+        try{
+            return repository.save(obj);
+        }catch (EmptyResultDataAccessException e ){
+            throw  new ResourcedNotFoundException(id);
+        } catch (DataIntegrityViolationException e ){
+            throw new DataBaseException(e.getMessage());
+        }
     }
 
     public void delete(Long id){
